@@ -4,6 +4,12 @@ import com.example.application.data.entity.User;
 import com.example.application.data.repository.UserRepository;
 import com.vaadin.flow.server.VaadinRequest;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -22,34 +29,77 @@ public class UserService {
 
     private final UserRepository userRepository;
    
+    
+
+    public record UserRecord(
+        Long id,
+        @NotNull
+        @NotBlank
+        String account,
+        @NotBlank
+        @NotNull
+        String password,
+        @NotBlank
+        @NotNull
+        String repeatPassword,
+        @NotBlank
+        @NotNull
+        String username,
+        @NotNull
+        String gender,
+        @NotNull
+        String mbti
+    ){}
+
+    public UserRecord toUserRecord(User u){
+        return new UserRecord(
+            u.getId(),
+            u.getAccount(),
+            u.getPassword(),
+            u.getPassword(),
+            u.getUsername(),
+            u.getGender(),
+            u.getMbti()
+        );
+    }
 
     @Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
         
     }
-
-    public User registerUser(String userName, String password, String email) {
-        logger.info("Registering user: " + userName);
-        if (userRepository.findByUsername(userName).isPresent() || userRepository.findByEmail(email).isPresent()) {
+    
+    public User registerUser( 
+            String account,
+            String password,
+            String nickName
+            ) {
+        logger.info("Registering user: " + account);
+        if (userRepository.findByAccount(account).isPresent() || userRepository.findByPassword(password).isPresent()) {
             throw new IllegalArgumentException("Username or email already exists");
         }
 
         User user = new User();
-        user.setUsername(userName);
+        user.setAccount(account);
         user.setPassword(password);
-        user.setEmail(email);
+        user.setUsername(nickName);
         return userRepository.save(user);
     }
 
-    public Optional<User> findByUsername(String userName) {
-        return userRepository.findByUsername(userName);
+    public Optional<User> findByAccount(String account) {
+        return userRepository.findByAccount(account);
     }
 
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+     public User login(String username, String password, HttpSession session) {
+        Optional<User> userOpt = userRepository.findByUsernameAndPassword(username, password);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            session.setAttribute("currentUser", user); // Store user in session
+            return user;
+        } else {
+            throw new IllegalArgumentException("Invalid username or password");
+        }
     }
-
     public User loginUser(String userName, String password) {
         logger.info("Logging in user: " + userName);
         Optional<User> userOptional = userRepository.findByUsername(userName);
@@ -70,28 +120,19 @@ public class UserService {
             throw new IllegalArgumentException("User not found");
         }
     }
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User not found by name"+username));
+    public User getUserByAccount(String account) {
+        return userRepository.findByAccount(account).orElseThrow(() -> new IllegalArgumentException("User not found by account"+account));
     }
-    public void logoutUser() {
-        SecurityContextHolder.clearContext();
+    public void logout(HttpSession session) {
+        session.invalidate(); // Invalidate the session
     }
-
-    public String getCurrentUser() {
-        return VaadinRequest.getCurrent().getUserPrincipal().getName();
+    public User getCurrentUser(HttpSession session) {
+        return (User) session.getAttribute("currentUser"); // Retrieve user from session
     }
 
     public User getUserById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    public User createUserIfNotExist(String username, String password, String email) {
-        return userRepository.findByUsername(username).orElseGet(() -> {
-            User newUser = new User();
-            newUser.setUsername(username);
-            newUser.setPassword(password);
-            newUser.setEmail(email);
-            return userRepository.save(newUser);
-        });
-    }
+    
 }
