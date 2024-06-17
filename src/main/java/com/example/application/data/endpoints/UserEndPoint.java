@@ -24,7 +24,7 @@ public class UserEndPoint {
 
     @Autowired
     private UserService userService;
-
+    
     @Autowired
     private HttpSession session;
 
@@ -51,7 +51,8 @@ public class UserEndPoint {
     public User getUserById(Long id) {
         return userService.getUserById(id);
     }
-    public User getCurrentUser() {
-        return userService.getCurrentUser(session);
+    public String getCurrentUser() { //account
+         User Currentuser =userService.getCurrentUser(session);
+         return Currentuser.getAccount();
     }
 }
