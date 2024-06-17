@@ -4,6 +4,7 @@ import { lazy } from 'react';
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 import {ChatRoomList} from './views/ChatRoomList';
 import {ChatView} from './views/ChatView';
+
 const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
 export const routes: RouteObject[] = [

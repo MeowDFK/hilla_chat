@@ -16,6 +16,8 @@ export default function MainLayout() {
                     <nav>
                         <NavLink to="/">list</NavLink>
                         <NavLink to="/about">About</NavLink>
+                        <NavLink to="/chat/1/user1">ChatView</NavLink>
+            
                     </nav>
                 </header>
             </div>
