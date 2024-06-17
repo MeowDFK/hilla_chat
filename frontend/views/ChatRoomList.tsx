@@ -10,6 +10,10 @@ import { Button } from '@hilla/react-components/Button.js';
 import { Avatar } from '@hilla/react-components/Avatar.js';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@hilla/react-components/Icon.js';
+import UserRecordModel from 'Frontend/generated/com/example/application/data/service/UserService/UserRecordModel';
+import RoomRecordModel from 'Frontend/generated/com/example/application/data/endpoints/ChatEndPoint/RoomRecordModel';
+import RoomRecord from 'Frontend/generated/com/example/application/data/endpoints/ChatEndPoint/RoomRecord';
+import UserRecord from 'Frontend/generated/com/example/application/data/service/UserService/UserRecord';
 const avatarStyle = {
   height: '64px',
   width: '64px',
@@ -34,12 +38,12 @@ export function ChatRoomList() {
 
   async function fetchUserAndChatRooms(userName: string) {
     try {
-      const rooms: ChatRoom[] = await ChatEndPoint.getUserChatRooms(userName);
+      const rooms: RoomRecord[] = await ChatEndPoint.getUserChatRooms(userName);
       const roomsWithUsers = await Promise.all(
         rooms.map(async (room) => {
           if (room.id !== undefined) {
             
-            const otherUser: User = await ChatEndPoint.getOtherUserInChatRoom(room.id, userName);
+            const otherUser: UserRecord = await ChatEndPoint.getOtherUserInChatRoom(room.id, userName);
             return { chatRoom: room, otherUser };
           }
           return null;
