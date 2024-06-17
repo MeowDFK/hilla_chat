@@ -31,11 +31,9 @@ public class User implements Serializable {
     @Column(name = "gender")
     private String gender;
 
-    @Column(name = "interests")
-    private String interests;
 
     @Column(name = "age")
-    private int age;
+    private String age;
 
     @Column(name = "mbti")
     private String mbti;
@@ -111,19 +109,13 @@ public class User implements Serializable {
         this.gender = gender;
     }
 
-    public String getInterests() {
-        return interests;
-    }
+    
 
-    public void setInterests(String interests) {
-        this.interests = interests;
-    }
-
-    public int getAge() {
+    public String getAge() {
         return age;
     }
 
-    public void setAge(int age) {
+    public void setAge(String age) {
         this.age = age;
     }
 

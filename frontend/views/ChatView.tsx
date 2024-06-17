@@ -8,7 +8,7 @@ import { TextFieldChangeEvent } from '@vaadin/text-field/src/vaadin-text-field.j
 import { MessageInputSubmitEvent } from '@vaadin/message-input/src/vaadin-message-input.js';
 
 export function ChatView() {
-  const { roomId , username} = useParams<Record<string, string>>();
+  const { roomId , account} = useParams<Record<string, string>>();
   const [messages, setMessages] = useState< MessageRecord[]>([]);
   const [message, setMessage] = useState('');
   
@@ -27,7 +27,7 @@ export function ChatView() {
 
   function sendMessage(message: string) {
     if (roomId) {
-      ChatEndPoint.sendMessage(Number(roomId), String(username), message);
+      ChatEndPoint.sendMessage(Number(roomId), String(account), message);
       setMessage('');
     }
 }

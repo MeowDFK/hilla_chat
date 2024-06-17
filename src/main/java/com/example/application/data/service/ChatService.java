@@ -20,6 +20,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import javax.annotation.processing.Messager;
+import dev.hilla.exception.EndpointException;
+
 @Service
 public class ChatService {
     @Autowired
@@ -71,7 +73,7 @@ public class ChatService {
 
     public ChatRoom createChatRoom(User user1, User user2) {
         if (user1.equals(user2)) {
-            throw new IllegalArgumentException("A chat room must have two different users.");
+            throw new EndpointException("A chat room must have two different users.");
         }
 
         Optional<ChatRoom> existingChatRoom = chatRoomRepository.findByUsers(user1, user2);
@@ -103,7 +105,7 @@ public class ChatService {
         if (sink == null) {
             
             logger.severe("Chat room sink not found for room ID: " + chatRoomId);
-            throw new IllegalArgumentException("Chat room not found");
+            throw new EndpointException("Chat room not found");
         }
         
     
@@ -112,7 +114,7 @@ public class ChatService {
     public void enterRoom(Long chatRoomId,User user) {
         logger.info("Joined chat room ID: " + chatRoomId);
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-        .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
+        .orElseThrow(() -> new EndpointException("Chat room not found"));
         Sinks.Many<MessageRecord> sink = chatRoomSinks.get(chatRoomId);
         for(Message history: chatRoom.getMessages()){
             MessageRecord msgHis =new MessageRecord(
@@ -130,7 +132,7 @@ public class ChatService {
     }
     public MessageRecord sendMessage(Long chatRoomId, User sender, String content) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
+                .orElseThrow(() -> new EndpointException("Chat room not found"));
     
         Message message = new Message();
         message.setChatRoom(chatRoom);
@@ -168,9 +170,9 @@ public class ChatService {
         return messageRecords;
     }
 
-    public User getOtherUserInChatRoom(Long chatRoomId, String username) {
+    public User getOtherUserInChatRoom(Long chatRoomId, String Account) {
         ChatRoom chatRoom = getChatRoomById(chatRoomId).orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
        
-        return chatRoom.getOtherUser(userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User in room not found")));
+        return chatRoom.getOtherUser(userRepository.findByAccount(Account).orElseThrow(() -> new IllegalArgumentException("User in room not found")));
     }
 }

@@ -10,10 +10,13 @@ import { Button } from '@hilla/react-components/Button.js';
 import { Avatar } from '@hilla/react-components/Avatar.js';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@hilla/react-components/Icon.js';
+import { useParams } from 'react-router-dom';
 import UserRecordModel from 'Frontend/generated/com/example/application/data/service/UserService/UserRecordModel';
 import RoomRecordModel from 'Frontend/generated/com/example/application/data/endpoints/ChatEndPoint/RoomRecordModel';
 import RoomRecord from 'Frontend/generated/com/example/application/data/endpoints/ChatEndPoint/RoomRecord';
 import UserRecord from 'Frontend/generated/com/example/application/data/service/UserService/UserRecord';
+import { UserEndPoint } from 'Frontend/generated/endpoints';
+import { EndpointValidationError } from '@hilla/frontend';
 const avatarStyle = {
   height: '64px',
   width: '64px',
@@ -25,33 +28,55 @@ type ChatRoomWithUser = {
 };
 
 export function ChatRoomList() {
+  const {account} = useParams();
   const navigate = useNavigate();
   const [chatRoomsWithUsers, setChatRoomsWithUsers] = useState<ChatRoomWithUser[]>([]);
-  const [userName, setUserName] = useState('');
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    if (userName) {
-      fetchUserAndChatRooms(userName);
-    }
-  }, [userName]);
+    if (account) {
 
-  async function fetchUserAndChatRooms(userName: string) {
+      fetchUserAndChatRooms(account);
+    }
+  }, [account]);
+  async function checkUrl (account: string){
     try {
-      const rooms: RoomRecord[] = await ChatEndPoint.getUserChatRooms(userName);
+    const  cur = await UserEndPoint.getCurrentUser();
+    }catch (error) {
+      if (error instanceof EndpointValidationError) {
+        (error as EndpointValidationError).validationErrorData.forEach(
+          ({ parameterName, message }) => {
+            console.warn(message); 
+          }
+        );
+        //redirect
+      }
+    }
+  }
+  async function fetchUserAndChatRooms(account: string) {
+    try {
+      const account = await UserEndPoint.getCurrentUser();
+      const rooms: RoomRecord[] = await ChatEndPoint.getUserChatRooms(account);
       const roomsWithUsers = await Promise.all(
         rooms.map(async (room) => {
           if (room.id !== undefined) {
             
-            const otherUser: UserRecord = await ChatEndPoint.getOtherUserInChatRoom(room.id, userName);
+            const otherUser: UserRecord = await ChatEndPoint.getOtherUserInChatRoom(room.id, account);
             return { chatRoom: room, otherUser };
           }
           return null;
         })
       );
       setChatRoomsWithUsers(roomsWithUsers.filter(room => room !== null) as ChatRoomWithUser[]);
-    } catch (error) {
-      console.error('Failed to fetch user or chat rooms:', error);
+    } catch (error: any) {
+      if (error instanceof EndpointValidationError) {
+        (error as EndpointValidationError).validationErrorData.forEach(
+          ({ parameterName, message }) => {
+            console.warn(message); 
+          }
+        );
+      }
+       navigate("/");
     }
   }
 
@@ -59,34 +84,22 @@ export function ChatRoomList() {
     setInput(e.target.value);
   }
 
-  function logIn() {
-    setUserName(input);
-    setInput('');
-  }
+  
 
-  function navRoom  (roomID: number,userName:  string) {
-    const url = `/chat/${roomID}/${userName}`;
+  function navRoom  (roomID: number,account:  string) {
+    const url = `/chat/${roomID}/${account}`;
     navigate(url);
-    //ChatEndPoint.enterRoom(roomID, userName);
+    //ChatEndPoint.enterRoom(roomID, account);
   };
 
-  if (!userName) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="flex gap-m">
-          <TextField
-            placeholder="User name"
-            value={input}
-            onChange={handleInput}
-          />
-          <Button autofocus theme= "Primary"  onClick={logIn}>
-          Enter
-
-          </Button>
+  if (!account) {
+   return (
+    <div>
+        <h2>NO</h2>
         </div>
-      </div>
-    );
-  } else {
+   );
+    
+  } else
     return (
       <div>
         <h2>Chat Rooms</h2>
@@ -101,7 +114,7 @@ export function ChatRoomList() {
               <VerticalLayout>
                 <b>{otherUser.username}</b>
                 <span>{otherUser.mbti}</span>
-                <Button autofocus theme="Secondary"  onClick={() => navRoom(chatRoomId,userName)}>
+                <Button autofocus theme="Secondary"  onClick={() => navRoom(chatRoomId,account)}>
                   Chat
                  
                 </Button>
@@ -111,5 +124,5 @@ export function ChatRoomList() {
         })}
       </div>
     );
-  }
 }
+

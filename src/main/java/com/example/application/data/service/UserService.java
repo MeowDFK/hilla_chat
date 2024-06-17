@@ -4,6 +4,7 @@ import com.example.application.data.entity.User;
 import com.example.application.data.repository.UserRepository;
 import com.vaadin.flow.server.VaadinRequest;
 
+import dev.hilla.exception.EndpointException;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -29,8 +31,18 @@ public class UserService {
 
     private final UserRepository userRepository;
    
-    
-
+    public record Userhobbies(
+        @NotNull
+        @NotBlank
+        String account,
+        @NotNull
+        @NotBlank
+        String mbti,
+        String age,
+        List<String> sports,
+        List<String> movies,
+        List<String> foods
+    ){}
     public record UserRecord(
         Long id,
         @NotNull
@@ -44,11 +56,7 @@ public class UserService {
         String repeatPassword,
         @NotBlank
         @NotNull
-        String username,
-        @NotNull
-        String gender,
-        @NotNull
-        String mbti
+        String username
     ){}
 
     public UserRecord toUserRecord(User u){
@@ -57,9 +65,8 @@ public class UserService {
             u.getAccount(),
             u.getPassword(),
             u.getPassword(),
-            u.getUsername(),
-            u.getGender(),
-            u.getMbti()
+            u.getUsername()
+
         );
     }
 
@@ -69,59 +76,45 @@ public class UserService {
         
     }
     
-    public User registerUser( 
+    public UserRecord registerUser( 
             String account,
             String password,
             String nickName
             ) {
         logger.info("Registering user: " + account);
+        logger.info("Registering user: " + password);
+        logger.info("Registering user: " + nickName);
         if (userRepository.findByAccount(account).isPresent() || userRepository.findByPassword(password).isPresent()) {
-            throw new IllegalArgumentException("Username or email already exists");
+            throw new EndpointException("Username or email already exists");
+           
         }
 
         User user = new User();
         user.setAccount(account);
         user.setPassword(password);
         user.setUsername(nickName);
-        return userRepository.save(user);
+        userRepository.save(user);
+        logger.info("Registering user: " + account+"seccess");
+        return toUserRecord(user);
     }
 
     public Optional<User> findByAccount(String account) {
         return userRepository.findByAccount(account);
     }
 
-     public User login(String username, String password, HttpSession session) {
-        Optional<User> userOpt = userRepository.findByUsernameAndPassword(username, password);
+     public UserService.UserRecord login(String account, String password, HttpSession session) {
+        Optional<User> userOpt = userRepository.findByAccountAndPassword(account, password);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             session.setAttribute("currentUser", user); // Store user in session
-            return user;
+            logger.info("Registering user: "+user+"login seccess");
+            return toUserRecord(user);
         } else {
-            throw new IllegalArgumentException("Invalid username or password");
-        }
-    }
-    public User loginUser(String userName, String password) {
-        logger.info("Logging in user: " + userName);
-        Optional<User> userOptional = userRepository.findByUsername(userName);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (password.equals(user.getPassword())) {
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        userName,
-                        password,
-                        Collections.singletonList(() -> "ROLE_USER")
-                );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                return user;
-            } else {
-                throw new IllegalArgumentException("Invalid password");
-            }
-        } else {
-            throw new IllegalArgumentException("User not found");
+            throw new EndpointException("Invalid username or password");
         }
     }
     public User getUserByAccount(String account) {
-        return userRepository.findByAccount(account).orElseThrow(() -> new IllegalArgumentException("User not found by account"+account));
+        return userRepository.findByAccount(account).orElseThrow(() -> new EndpointException("User not found by account"+account));
     }
     public void logout(HttpSession session) {
         session.invalidate(); // Invalidate the session
@@ -131,7 +124,7 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return userRepository.findById(id).orElseThrow(() -> new EndpointException("User not found"));
     }
 
     

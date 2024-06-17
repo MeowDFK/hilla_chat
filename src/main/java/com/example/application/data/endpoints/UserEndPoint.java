@@ -28,15 +28,15 @@ public class UserEndPoint {
     @Autowired
     private HttpSession session;
 
-    public User register( UserService.UserRecord userRecord){
-        return userService.registerUser(
+    public UserService.UserRecord register( UserService.UserRecord userRecord){
+         return userService.registerUser(
                 userRecord.account(),
                 userRecord.password(),
                 userRecord.username()
                 );
     }
 
-    public User login(String account, String password) {
+    public UserService.UserRecord login(String account, String password) {
         return userService.login(account, password, session);
     }
 

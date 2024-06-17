@@ -23,7 +23,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-
+import dev.hilla.exception.EndpointException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -51,17 +51,13 @@ public class ChatEndPoint {
                                 c.getUser1().getAccount(),
                                 c.getUser1().getPassword(),
                                 c.getUser1().getPassword(),
-                                c.getUser1().getUsername(),
-                                c.getUser1().getGender(),
-                                c.getUser1().getMbti()
+                                c.getUser1().getUsername()
                                 ),              
                 new  UserRecord(c.getUser2().getId(),
                                 c.getUser2().getAccount(),
                                 c.getUser2().getPassword(),
                                 c.getUser1().getPassword(),
-                                c.getUser2().getUsername(),
-                                c.getUser2().getGender(),
-                                c.getUser2().getMbti()
+                                c.getUser2().getUsername()
                                 )           
 
         );
@@ -73,13 +69,13 @@ public class ChatEndPoint {
     }
     public void enterRoom(Long chatRoomId, String account) {
         ChatRoom chatRoom = chatService.getChatRoomById(chatRoomId)
-            .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
+            .orElseThrow(() -> new EndpointException("Chat room not found"));
         User sender = userService.getUserByAccount(account);
        chatService.enterRoom(chatRoomId, sender);
     }
     public List<RoomRecord> getUserChatRooms(String account) {
         User user = userService.findByAccount(account)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new EndpointException("User not found"));
                return chatService.getUserChatRooms(user).stream()
             .map(this::toRoomRecord) // Convert to ChatRoom objects
             .collect(Collectors.toList()); // Collect into a List
@@ -94,13 +90,13 @@ public class ChatEndPoint {
 
     public List<ChatService.MessageRecord> getMessages(Long chatRoomId) {
         ChatRoom chatRoom = chatService.getChatRoomById(chatRoomId)
-            .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
+            .orElseThrow(() -> new EndpointException("Chat room not found"));
         return chatService.getMessages(chatRoom);
     }
  
     public ChatService.MessageRecord sendMessage(Long chatRoomId, String account, String content) {
         ChatRoom chatRoom = chatService.getChatRoomById(chatRoomId)
-            .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
+            .orElseThrow(() -> new EndpointException("Chat room not found"));
         User sender = userService.getUserByAccount(account);
         return chatService.sendMessage(chatRoomId, sender, content);
          // Convert to ChatRoom objects // Collect into a List;

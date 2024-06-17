@@ -64,9 +64,8 @@ public class DataInitializer2 implements CommandLineRunner {
             User user = new User();
             user.setUsername(username);
             user.setPassword(encodedPassword); // Save the encoded password to the user
-            user.setAccount(username); // Assuming the account is the same as username for this example
+            user.setAccount(account); // Assuming the account is the same as username for this example
             user.setGender("Not specified"); // Default value if gender is not provided
-            user.setInterests("Not specified"); // Default value if interests are not provided
             user.setMbti("Not specified"); // Default value if MBTI is not provided
             logger.info("Creating user: " + username);
             return userRepository.save(user);
