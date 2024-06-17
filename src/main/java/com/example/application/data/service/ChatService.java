@@ -1,5 +1,6 @@
 package com.example.application.data.service;
 
+
 import com.example.application.data.entity.ChatRoom;
 import com.example.application.data.entity.Message;
 import com.example.application.data.entity.User;
@@ -29,6 +30,7 @@ public class ChatService {
     @Autowired
     private UserRepository userRepository;
 
+    
     private final Map<Long, Sinks.Many<MessageRecord>> chatRoomSinks = new HashMap<>();
 
     private static final Logger logger = Logger.getLogger(ChatService.class.getName());

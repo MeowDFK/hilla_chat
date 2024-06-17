@@ -17,7 +17,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 
+
 @Component
+@Transactional
 public class DataInitializer2 implements CommandLineRunner {
 
     private static final Logger logger = Logger.getLogger(DataInitializer2.class.getName());
@@ -32,13 +34,12 @@ public class DataInitializer2 implements CommandLineRunner {
     private MessageRepository messageRepository;
 
     @Override
-    @Transactional
     public void run(String... args) throws Exception {
         try {
             // Create users if not already present
-            User user1 = createUserIfNotExist("user1", "password1", "user1@example.com");
-            User user2 = createUserIfNotExist("user2", "password2", "user2@example.com");
-            User user3 = createUserIfNotExist("user3", "password3", "user3@example.com");
+            User user1 = createUserIfNotExist("user1","Bob", "password1","ENFP");
+            User user2 = createUserIfNotExist("user2","Judy", "password2","INFP" );
+            User user3 = createUserIfNotExist("user3","Rrrr", "password3","ENTJ" );
 
             // Create chat rooms if not already present
             ChatRoom chatRoom1 = createChatRoomIfNotExist(user1, user2);
@@ -55,20 +56,19 @@ public class DataInitializer2 implements CommandLineRunner {
         }
     }
 
-    private User createUserIfNotExist(String username, String password, String email) {
+    private User createUserIfNotExist(String account,String username, String password,String Mbti) {
         String encodedPassword = password; // Encode the password if needed
         logger.info("Encoded password: " + encodedPassword); // Log the encoded password (for debugging purposes, usually not recommended to log passwords)
 
-        return userRepository.findByEmail(email).orElseGet(() -> {
+        return userRepository.findByAccount(account).orElseGet(() -> {
             User user = new User();
             user.setUsername(username);
             user.setPassword(encodedPassword); // Save the encoded password to the user
-            user.setEmail(email);
             user.setAccount(username); // Assuming the account is the same as username for this example
             user.setGender("Not specified"); // Default value if gender is not provided
             user.setInterests("Not specified"); // Default value if interests are not provided
             user.setMbti("Not specified"); // Default value if MBTI is not provided
-            logger.info("Creating user: " + email);
+            logger.info("Creating user: " + username);
             return userRepository.save(user);
         });
     }
@@ -81,7 +81,7 @@ public class DataInitializer2 implements CommandLineRunner {
             ChatRoom chatRoom = new ChatRoom();
             chatRoom.setUser1(user1);
             chatRoom.setUser2(user2);
-            logger.info("Creating chat room between users: " + user1.getEmail() + " and " + user2.getEmail());
+            logger.info("Creating chat room between users: " + user1.getAccount() + " and " + user2.getAccount());
             return chatRoomRepository.save(chatRoom);
         }
     }
@@ -92,7 +92,7 @@ public class DataInitializer2 implements CommandLineRunner {
         message.setSender(sender);
         message.setContent(content);
         message.setTimestamp(Instant.now());
-        logger.info("Creating message from " + sender.getEmail() + ": " + content);
+        logger.info("Creating message from " + sender.getAccount() + ": " + content);
         messageRepository.save(message);
 
         // Adding the message to the chatRoom's messages

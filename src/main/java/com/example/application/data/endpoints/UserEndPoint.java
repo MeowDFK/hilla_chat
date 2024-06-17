@@ -5,6 +5,11 @@ import com.example.application.data.service.UserService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.hilla.BrowserCallable;
 import dev.hilla.Endpoint;
+import jakarta.servlet.http.HttpSession;
+
+import jakarta.validation.constraints.NotNull;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
@@ -14,29 +19,39 @@ import java.util.Optional;
 @Endpoint
 public class UserEndPoint {
 
+
+    
+
     @Autowired
     private UserService userService;
 
-    public User register(String userName, String password, String email) {
-        return userService.registerUser(userName, password, email);
+    @Autowired
+    private HttpSession session;
+
+    public User register( UserService.UserRecord userRecord){
+        return userService.registerUser(
+                userRecord.account(),
+                userRecord.password(),
+                userRecord.username()
+                );
     }
 
-    public User login(String userName, String password) {
-        return userService.loginUser(userName, password);
+    public User login(String account, String password) {
+        return userService.login(account, password, session);
     }
 
-    public Optional<User> getUserByUsername(String userName) {
-        return userService.findByUsername(userName);
+    public Optional<User> getUserByAccount(String account) {
+        return userService.findByAccount(account);
     }
 
     public void logout() {
-        userService.logoutUser();
+        userService.logout(session);
     }
 
     public User getUserById(Long id) {
         return userService.getUserById(id);
     }
-    public String getCurrentUser() {
-        return userService.getCurrentUser();
+    public User getCurrentUser() {
+        return userService.getCurrentUser(session);
     }
 }

@@ -29,6 +29,7 @@ public class Message implements Serializable {
     @GeneratedValue
     private Instant timestamp;
 
+    
     // Getters and setters
     public Long getId() {
         return id;

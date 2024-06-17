@@ -1,26 +1,30 @@
 package com.example.application.data.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
+
+import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+
 @Entity
-@Table(name = "users") // Ensure table name is provided if it differs from the entity name
-public class User implements Serializable{
+@Table(name = "users")
+public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     @Column(name = "account")
     private String account;
 
+    @NotBlank
     @Column(name = "password", nullable = false)
     private String password;
 
+    @NotBlank
     @Column(name = "user_name", nullable = false)
     private String username;
 
@@ -30,21 +34,43 @@ public class User implements Serializable{
     @Column(name = "interests")
     private String interests;
 
+    @Column(name = "age")
+    private int age;
+
     @Column(name = "mbti")
     private String mbti;
 
-    @Email
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
+    @ElementCollection
+    @CollectionTable(name = "user_sports", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "sport")
+    private List<String> sports;
 
-    // Getters and setters
-    public User(){}
-    public User(String username,String password,String email){
+    @ElementCollection
+    @CollectionTable(name = "user_movies", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "movie")
+    private List<String> movies;
+
+    @ElementCollection
+    @CollectionTable(name = "user_foods", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "food")
+    private List<String> foods;
+
+    @Column(name = "other_guy_want_match_me", nullable = false)
+    private boolean otherGuyWantMatchMe = false;
+
+    @Column(name = "accept_match", nullable = false)
+    private boolean acceptMatch = false;
+
+    public User() {}
+
+    public User(String username, String password, String account) {
         this.username = username;
         this.password = password;
-        this.email = email ;
-
+        this.account = account;
+     
     }
+
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -73,8 +99,8 @@ public class User implements Serializable{
         return username;
     }
 
-    public void setUsername(String userName) {
-        this.username = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getGender() {
@@ -93,6 +119,14 @@ public class User implements Serializable{
         this.interests = interests;
     }
 
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
     public String getMbti() {
         return mbti;
     }
@@ -101,13 +135,46 @@ public class User implements Serializable{
         this.mbti = mbti;
     }
 
-    public String getEmail() {
-        return email;
+    public List<String> getSports() {
+        return sports;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setSports(List<String> sports) {
+        this.sports = sports;
     }
+
+    public List<String> getMovies() {
+        return movies;
+    }
+
+    public void setMovies(List<String> movies) {
+        this.movies = movies;
+    }
+
+    public List<String> getFoods() {
+        return foods;
+    }
+
+    public void setFoods(List<String> foods) {
+        this.foods = foods;
+    }
+
+    public boolean isOtherGuyWantMatchMe() {
+        return otherGuyWantMatchMe;
+    }
+
+    public void setOtherGuyWantMatchMe(boolean otherGuyWantMatchMe) {
+        this.otherGuyWantMatchMe = otherGuyWantMatchMe;
+    }
+
+    public boolean isAcceptMatch() {
+        return acceptMatch;
+    }
+
+    public void setAcceptMatch(boolean acceptMatch) {
+        this.acceptMatch = acceptMatch;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -119,5 +186,29 @@ public class User implements Serializable{
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void addSport(String sport) {
+        this.sports.add(sport);
+    }
+
+    public void removeSport(String sport) {
+        this.sports.remove(sport);
+    }
+
+    public void addMovie(String movie) {
+        this.movies.add(movie);
+    }
+
+    public void removeMovie(String movie) {
+        this.movies.remove(movie);
+    }
+
+    public void addFood(String food) {
+        this.foods.add(food);
+    }
+
+    public void removeFood(String food) {
+        this.foods.remove(food);
     }
 }
